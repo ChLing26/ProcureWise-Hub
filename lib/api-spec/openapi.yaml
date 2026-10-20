@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: procurement
+    description: Procurement requests, supplier offers, approvals, invoices, and recommendations
 paths:
   /healthz:
     get:
@@ -24,6 +26,123 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /procurement/dashboard:
+    get:
+      operationId: getProcurementDashboard
+      tags: [procurement]
+      summary: Get procurement dashboard summary and recent activity
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcurementDashboard"
+  /procurement/requests:
+    get:
+      operationId: listProcurementRequests
+      tags: [procurement]
+      summary: List procurement requests
+      responses:
+        "200":
+          description: Procurement requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProcurementRequestSummary"
+    post:
+      operationId: createProcurementRequest
+      tags: [procurement]
+      summary: Create a procurement request and generate supplier offers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProcurementRequestInput"
+      responses:
+        "201":
+          description: Created request with ranked offers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcurementRequestDetail"
+  /procurement/requests/{requestId}:
+    get:
+      operationId: getProcurementRequest
+      tags: [procurement]
+      summary: Get a procurement request and its supplier offers
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Request detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcurementRequestDetail"
+        "404":
+          description: Request not found
+  /procurement/requests/{requestId}/decision:
+    post:
+      operationId: decideProcurementRequest
+      tags: [procurement]
+      summary: Approve or reject a supplier offer
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProcurementDecisionInput"
+      responses:
+        "200":
+          description: Updated request, with an invoice when approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcurementRequestDetail"
+        "400":
+          description: Invalid decision
+        "404":
+          description: Request or offer not found
+  /procurement/invoices:
+    get:
+      operationId: listProcurementInvoices
+      tags: [procurement]
+      summary: List signed electronic invoice records
+      responses:
+        "200":
+          description: Invoice records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProcurementInvoice"
+  /procurement/recommendations:
+    get:
+      operationId: getProcurementRecommendations
+      tags: [procurement]
+      summary: Generate recommendations from historical approval choices
+      responses:
+        "200":
+          description: AI-generated recommendations grounded in approval history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcurementRecommendations"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +152,160 @@ components:
           type: string
       required:
         - status
+    ProcurementRequestInput:
+      type: object
+      required: [itemName, quantity, budgetAmount, currency, requiredDeliveryDate, deliveryLocation, requesterName]
+      properties:
+        itemName:
+          type: string
+          minLength: 2
+        quantity:
+          type: integer
+          minimum: 1
+        budgetAmount:
+          type: number
+          exclusiveMinimum: 0
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        requiredDeliveryDate:
+          type: string
+          format: date
+        deliveryLocation:
+          type: string
+          minLength: 2
+        requesterName:
+          type: string
+          minLength: 2
+    ProcurementOffer:
+      type: object
+      required: [id, supplierName, supplierLocation, distanceKm, unitPrice, shippingFee, totalPrice, currency, deliveryDays, reliability, overallScore, priceScore, speedScore, proximityScore, reliabilityScore, rank]
+      properties:
+        id: { type: integer }
+        supplierName: { type: string }
+        supplierLocation: { type: string }
+        distanceKm: { type: number }
+        unitPrice: { type: number }
+        shippingFee: { type: number }
+        totalPrice: { type: number }
+        currency: { type: string }
+        deliveryDays: { type: integer }
+        reliability: { type: number }
+        overallScore: { type: number }
+        priceScore: { type: number }
+        speedScore: { type: number }
+        proximityScore: { type: number }
+        reliabilityScore: { type: number }
+        rank: { type: integer }
+    ProcurementInvoice:
+      type: object
+      required: [id, reference, requestId, itemName, quantity, supplierName, buyerName, unitPrice, shippingFee, totalAmount, currency, issuedAt, signature, signatureType]
+      properties:
+        id: { type: integer }
+        reference: { type: string }
+        requestId: { type: integer }
+        itemName: { type: string }
+        quantity: { type: integer }
+        supplierName: { type: string }
+        buyerName: { type: string }
+        unitPrice: { type: number }
+        shippingFee: { type: number }
+        totalAmount: { type: number }
+        currency: { type: string }
+        issuedAt: { type: string, format: date-time }
+        signature: { type: string }
+        signatureType: { type: string }
+    ProcurementRequestSummary:
+      type: object
+      required: [id, itemName, quantity, budgetAmount, currency, requiredDeliveryDate, deliveryLocation, requesterName, status, offerCount, createdAt]
+      properties:
+        id: { type: integer }
+        itemName: { type: string }
+        quantity: { type: integer }
+        budgetAmount: { type: number }
+        currency: { type: string }
+        requiredDeliveryDate: { type: string, format: date }
+        deliveryLocation: { type: string }
+        requesterName: { type: string }
+        status:
+          type: string
+          enum: [open_for_quotes, pending_approval, approved, rejected]
+        offerCount: { type: integer }
+        selectedSupplier:
+          type: [string, "null"]
+        createdAt: { type: string, format: date-time }
+    ProcurementRequestDetail:
+      allOf:
+        - $ref: "#/components/schemas/ProcurementRequestSummary"
+        - type: object
+          required: [offers, selectedOfferId, managerName, managerComment, invoice]
+          properties:
+            offers:
+              type: array
+              items:
+                $ref: "#/components/schemas/ProcurementOffer"
+            selectedOfferId:
+              type: [integer, "null"]
+            managerName:
+              type: [string, "null"]
+            managerComment:
+              type: [string, "null"]
+            invoice:
+              oneOf:
+                - $ref: "#/components/schemas/ProcurementInvoice"
+                - type: "null"
+    ProcurementDecisionInput:
+      type: object
+      required: [decision, managerName]
+      properties:
+        decision:
+          type: string
+          enum: [approved, rejected]
+        offerId:
+          type: [integer, "null"]
+        managerName:
+          type: string
+          minLength: 2
+        comment:
+          type: string
+    ProcurementActivity:
+      type: object
+      required: [id, title, detail, time, kind]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        detail: { type: string }
+        time: { type: string, format: date-time }
+        kind: { type: string }
+    ProcurementDashboard:
+      type: object
+      required: [activeRequests, awaitingApproval, approvedThisMonth, savingsAgainstBudget, recentActivity]
+      properties:
+        activeRequests: { type: integer }
+        awaitingApproval: { type: integer }
+        approvedThisMonth: { type: integer }
+        savingsAgainstBudget: { type: number }
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProcurementActivity"
+    ProcurementRecommendation:
+      type: object
+      required: [supplierName, approvals, reason]
+      properties:
+        supplierName: { type: string }
+        approvals: { type: integer }
+        reason: { type: string }
+    ProcurementRecommendations:
+      type: object
+      required: [summary, recommendations, generatedAt, historyCount]
+      properties:
+        summary: { type: string }
+        recommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProcurementRecommendation"
+        generatedAt: { type: string, format: date-time }
+        historyCount: { type: integer }
 
