@@ -1,0 +1,1 @@
+- [SME procurement workflow](procurement-workflow.md) — Target users and requested buying journey; live supplier data and certified invoicing need explicit setup.

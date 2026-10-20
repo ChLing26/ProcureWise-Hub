@@ -1,48 +1,45 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
-import {
-  Route,
-  Switch,
-  useLocation,
-  Router as WouterRouter,
-} from 'wouter';
+import { Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
+import { Shell } from '@/components/shell';
+import Dashboard from '@/pages/dashboard';
+import Requests from '@/pages/requests';
+import RequestDetail from '@/pages/request-detail';
+import Approvals from '@/pages/approvals';
+import Invoices from '@/pages/invoices';
+import Recommendations from '@/pages/recommendations';
 
-const queryClient = new QueryClient();
-
-function Home() {
-  return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Replit Agent is building...
-        </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Your app will appear here once it's ready.
-        </p>
-      </div>
-    </div>
-  );
-}
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: true, refetchInterval: 30000 } } });
 
 function Router() {
   return (
-    // Keep a shared shell (sidebar, navbar) outside the boundary so it
-    // survives a page crash.
-    <RoutedErrorBoundary>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route component={NotFound} />
-      </Switch>
-    </RoutedErrorBoundary>
+    <Shell>
+      <RoutedErrorBoundary>
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route path="/requests" component={Requests} />
+          <Route path="/requests/:id" component={RequestDetail} />
+          <Route path="/approvals" component={Approvals} />
+          <Route path="/invoices" component={Invoices} />
+          <Route path="/recommendations" component={Recommendations} />
+          <Route component={NotFound} />
+        </Switch>
+      </RoutedErrorBoundary>
+    </Shell>
   );
 }
 
 function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  useEffect(() => {
+    const page = location === "/" ? "Buying activity" : location.startsWith("/requests/") ? "Compare supplier offers" : ({ "/requests": "Procurement requests", "/approvals": "Manager approvals", "/invoices": "Invoice records", "/recommendations": "Supplier insights" }[location] ?? "Workspace");
+    document.title = `${page} · ProcureFlow`;
+    document.querySelector('meta[name="description"]')?.setAttribute("content", `${page}: manage SME purchasing requirements, compare supplier quotes, and keep clear approval records with ProcureFlow.`);
+  }, [location]);
   return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
 
