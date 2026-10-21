@@ -31,7 +31,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <PageHead kicker="Overview" title="Buying activity" description="A quick view of current requests, decisions, and budget savings.">
+      <PageHead kicker="Overview" title="Activities" description="A quick view of current requests, decisions, and budget savings.">
         <Link href="/requests?new=1" data-testid="link-new-request" className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-transform hover:-translate-y-px active:translate-y-0">
           <Plus className="h-4 w-4" /> New requirement <ArrowRight className="h-3.5 w-3.5" aria-hidden />
         </Link>
