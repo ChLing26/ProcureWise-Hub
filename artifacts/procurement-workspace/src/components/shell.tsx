@@ -56,7 +56,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <aside className={cn("fixed inset-y-0 left-0 z-40 w-60 flex-col bg-sidebar text-sidebar-foreground transition-transform md:sticky md:top-0 md:h-[100dvh] md:translate-x-0 flex",
         open ? "translate-x-0" : "-translate-x-full")}>
         <div className="flex items-center gap-2.5 px-6 pt-6 pb-8">
-          <div className="grid h-7 w-7 place-items-center rounded bg-sidebar-primary text-sidebar-primary-foreground font-bold text-sm">P</div>
+          <div className="grid h-7 w-7 place-items-center rounded bg-sidebar-primary text-sidebar-primary-foreground font-bold text-sm">SM</div>
           <div>
             <div className="font-bold tracking-tight leading-none">SupplyMate</div>
             <div className="num text-[10px] uppercase tracking-widest text-sidebar-foreground/50 mt-1">by TriHack</div>
