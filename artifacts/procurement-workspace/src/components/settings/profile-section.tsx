@@ -6,18 +6,21 @@ import { useAuth } from "@/lib/auth";
 import { useSettings, validateProfile } from "@/lib/settings";
 import { Note, SectionForm, SectionHeader } from "./section-frame";
 
-type Key = "name" | "email" | "bio";
+type Key = "name" | "email" | "address" | "bio";
 
 export function ProfileSection() {
   const { draft, update } = useSettings();
   const { user } = useAuth();
   const p = draft.profile;
   const [errors, setErrors] = useState<Partial<Record<Key, string>>>({});
-  const refs = { name: useRef<HTMLInputElement>(null), email: useRef<HTMLInputElement>(null), bio: useRef<HTMLTextAreaElement>(null) };
+  const refs = {
+    name: useRef<HTMLInputElement>(null), email: useRef<HTMLInputElement>(null),
+    address: useRef<HTMLTextAreaElement>(null), bio: useRef<HTMLTextAreaElement>(null),
+  };
   const set = (k: Key, v: string) => { update("profile", { ...p, [k]: v }); if (errors[k]) setErrors((e) => ({ ...e, [k]: undefined })); };
   const validate = () => {
     const e = validateProfile(p); setErrors(e);
-    const first = (["name", "email", "bio"] as Key[]).find((k) => e[k]);
+    const first = (["name", "email", "address", "bio"] as Key[]).find((k) => e[k]);
     if (first) refs[first].current?.focus();
     return !first;
   };
@@ -39,11 +42,14 @@ export function ProfileSection() {
           <Input id="profile-name" ref={refs.name} value={p.name} onChange={(e) => set("name", e.target.value)} {...aria("name")} data-testid="input-profile-name" />)}
         {field("email", "Contact email", "A note for yourself; it is not your login email.",
           <Input id="profile-email" type="email" ref={refs.email} value={p.email} onChange={(e) => set("email", e.target.value)} {...aria("email")} data-testid="input-profile-email" />)}
+        {field("address", "Address", "Optional. Up to 500 characters, in any address format.",
+          <Textarea id="profile-address" name="address" autoComplete="street-address" ref={refs.address} rows={3}
+            value={p.address} onChange={(e) => set("address", e.target.value)} {...aria("address")} data-testid="input-profile-address" />)}
         {field("bio", "Bio", "Optional. A short line about your purchasing role.",
           <Textarea id="profile-bio" ref={refs.bio} rows={4} value={p.bio} onChange={(e) => set("bio", e.target.value)} {...aria("bio")} data-testid="input-profile-bio" />)}
         <Note testId="text-profile-disclosure">
-          Saving here does not change your account name or login email{user ? <> (still <strong className="break-all">{user.email}</strong>)</> : null}, and it does not edit
-          any shared request, approval, or invoice. Procurement records stay shared with every workspace account; nothing here makes them yours.
+          Profile information is saved in this browser for your account only. Saving here does not change your account name or login email{user ? <> (still <strong className="break-all">{user.email}</strong>)</> : null}, and it does not edit
+          shipping destinations or any shared request, approval, or invoice. Procurement records stay shared with every workspace account; nothing here makes them yours.
         </Note>
       </SectionForm>
     </section>

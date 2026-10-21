@@ -13,7 +13,7 @@ const storageFixture = () => {
 };
 test("defaults use account identity, opt out and default to light", () => {
   const v = defaults(account);
-  assert.deepEqual(v.profile, { ...account, bio: "" });
+  assert.deepEqual(v.profile, { ...account, bio: "", address: "" });
   assert.deepEqual(v.preferences, { theme: "light" });
   assert.deepEqual(v.notifications, { email: false, push: false });
   assert.deepEqual(v.privacy, { visibility: "private", analytics: false, personalization: false });
@@ -32,7 +32,7 @@ test("drafts do not mutate saved values; section save/cancel preserves other dra
 });
 test("save/reload is account-scoped and ignores identity outside local profile", () => {
   const storage = storageFixture();
-  const values = replaceSection(defaults(account), "profile", { name: "Local", email: "local@example.test", bio: "Local only" });
+  const values = replaceSection(defaults(account), "profile", { name: "Local", email: "local@example.test", bio: "Local only", address: "東京都千代田区\n1-2-3, 日本" });
   assert.equal(writeSettings(1, values, () => storage), null);
   assert.deepEqual(readSettings(1, defaults(account), () => storage).values, values);
   assert.deepEqual(readSettings(2, defaults(account), () => storage).values, defaults(account));
@@ -62,7 +62,7 @@ test("storage access and quota failures never report successful writes", () => {
 test("invalid settings cannot be persisted and damaged storage can be replaced explicitly", () => {
   const storage = storageFixture();
   assert.equal(validSettings({ ...defaults(account), preferences: { theme: "system" } }), false);
-  const invalid = replaceSection(defaults(account), "profile", { name: "", email: "invalid", bio: "" });
+  const invalid = replaceSection(defaults(account), "profile", { name: "", email: "invalid", bio: "", address: "" });
   assert.ok(writeSettings(1, invalid, () => storage));
   assert.equal(storage.entries.size, 0);
   storage.entries.set(settingsKey(1), "broken");
@@ -70,11 +70,95 @@ test("invalid settings cannot be persisted and damaged storage can be replaced e
   assert.equal(readSettings(1, defaults(account), () => storage).error, null);
 });
 test("profile validation covers required fields, email and limits", () => {
-  assert.equal(Object.keys(validateProfile({ ...account, bio: "" })).length, 0);
-  assert.ok(validateProfile({ name: " ", email: "not-an-email", bio: "x".repeat(501) }).name);
-  assert.ok(validateProfile({ name: "x".repeat(101), email: "a@b.test", bio: "" }).name);
-  assert.ok(validateProfile({ ...account, email: "bad", bio: "" }).email);
-  assert.ok(validateProfile({ ...account, bio: "x".repeat(501) }).bio);
+  const profile = defaults(account).profile;
+  assert.equal(Object.keys(validateProfile(profile)).length, 0);
+  assert.ok(validateProfile({ ...profile, name: " ", email: "not-an-email", bio: "x".repeat(501) }).name);
+  assert.ok(validateProfile({ ...profile, name: "x".repeat(101), email: "a@b.test" }).name);
+  assert.ok(validateProfile({ ...profile, email: "bad" }).email);
+  assert.ok(validateProfile({ ...profile, bio: "x".repeat(501) }).bio);
+});
+test("address is optional, free-form and limited to 500 characters", () => {
+  for (const address of ["", "x", "x".repeat(500), "  ١٢ شارع النيل\nالقاهرة، مصر  ", "東京都千代田区\n日本", "12 rue de l'Église\n75001 Paris"]) {
+    const values = defaults(account);
+    values.profile.address = address;
+    assert.deepEqual(validateProfile(values.profile), {});
+    assert.equal(validSettings(values), true);
+  }
+  const values = defaults(account);
+  values.profile.address = "x".repeat(501);
+  assert.match(validateProfile(values.profile).address!, /500/);
+  assert.equal(validSettings(values), false);
+  const storage = storageFixture();
+  assert.ok(writeSettings(1, values, () => storage));
+  assert.equal(storage.entries.size, 0);
+});
+test("address edits cancel independently, save verbatim, reload and clear", () => {
+  const storage = storageFixture();
+  const saved = defaults(account);
+  const address = "  12 Jalan Merdeka\nKuala Lumpur, Malaysia  ";
+  let draft = replaceSection(saved, "profile", { ...saved.profile, address });
+  draft = replaceSection(draft, "notifications", { email: true, push: true });
+  assert.equal(sectionDirty(saved, draft, "profile"), true);
+  assert.equal(saved.profile.address, "");
+  const cancelled = replaceSection(draft, "profile", saved.profile);
+  assert.equal(sectionDirty(saved, cancelled, "profile"), false);
+  assert.equal(cancelled.profile.address, "");
+  assert.deepEqual(cancelled.notifications, draft.notifications);
+  const committed = replaceSection(saved, "profile", draft.profile);
+  assert.equal(writeSettings(1, committed, () => storage), null);
+  const loaded = readSettings(1, defaults(account), () => storage);
+  assert.equal(loaded.error, null);
+  assert.equal(loaded.values.profile.address, address);
+  assert.deepEqual(loaded.values.notifications, saved.notifications);
+  assert.equal(readSettings(2, defaults(account), () => storage).values.profile.address, "");
+  const cleared = replaceSection(loaded.values, "profile", { ...loaded.values.profile, address: "" });
+  assert.equal(sectionDirty(loaded.values, cleared, "profile"), true);
+  assert.equal(writeSettings(1, cleared, () => storage), null);
+  assert.deepEqual(readSettings(1, defaults(account), () => storage).values, saved);
+});
+test("known legacy profiles migrate with or without removed language, without writes or lost settings", () => {
+  const storage = storageFixture();
+  const expected = {
+    ...defaults(account),
+    profile: { name: "Local name", email: "local@example.test", bio: "Saved bio", address: "" },
+    preferences: { theme: "dark" as const },
+    notifications: { email: true, push: true },
+    privacy: { visibility: "public" as const, analytics: true, personalization: true },
+  };
+  const { address: _address, ...legacyProfile } = expected.profile;
+  for (const preferences of [expected.preferences, ...["en", "ms", "zh"].map(language => ({ ...expected.preferences, language }))]) {
+    const raw = JSON.stringify({ version: 1, accountId: 1, values: { ...expected, profile: legacyProfile, preferences } });
+    storage.entries.set(settingsKey(1), raw);
+    const loaded = readSettings(1, defaults(account), () => storage);
+    assert.equal(loaded.error, null);
+    assert.deepEqual(loaded.values, expected);
+    assert.equal(storage.entries.get(settingsKey(1)), raw);
+    assert.equal(writeSettings(1, loaded.values, () => storage), null);
+    assert.deepEqual(JSON.parse(storage.entries.get(settingsKey(1))!).values, expected);
+  }
+});
+test("migration does not accept malformed or unsupported profile records", () => {
+  const storage = storageFixture();
+  const { address: _address, ...legacy } = defaults(account).profile;
+  const profiles = [
+    { ...legacy, address: null }, { ...legacy, address: 123 }, { ...legacy, address: [] },
+    { ...legacy, address: "x".repeat(501) }, { ...legacy, name: null },
+    { ...legacy, password: "not-allowed" }, { ...defaults(account).profile, extra: true },
+    { name: account.name, email: account.email }, null, [],
+  ];
+  for (const profile of profiles) {
+    const raw = JSON.stringify({ version: 1, accountId: 1, values: { ...defaults(account), profile } });
+    storage.entries.set(settingsKey(1), raw);
+    assert.ok(readSettings(1, defaults(account), () => storage).error);
+    assert.equal(storage.entries.get(settingsKey(1)), raw);
+  }
+  for (const language of ["fr", null, 1]) {
+    const raw = JSON.stringify({ version: 1, accountId: 1, values: { ...defaults(account), profile: legacy, preferences: { theme: "dark", language } } });
+    storage.entries.set(settingsKey(1), raw);
+    assert.ok(readSettings(1, defaults(account), () => storage).error);
+    assert.equal(storage.entries.get(settingsKey(1)), raw);
+  }
+  assert.equal(validSettings({ ...defaults(account), profile: legacy }), false);
 });
 test("password policy boundaries, required fields, matching, and distinct values", () => {
   assert.equal(Object.keys(validatePasswords(emptyPasswords())).length, 3);
@@ -101,7 +185,7 @@ test("earlier language preferences are discarded without losing other saved choi
   const storage = storageFixture();
   const expected = {
     ...defaults(account),
-    profile: { name: "Local name", email: "local@example.test", bio: "Saved bio" },
+    profile: { name: "Local name", email: "local@example.test", bio: "Saved bio", address: "" },
     preferences: { theme: "dark" as const },
     notifications: { email: true, push: true },
     privacy: { visibility: "team" as const, analytics: true, personalization: true },

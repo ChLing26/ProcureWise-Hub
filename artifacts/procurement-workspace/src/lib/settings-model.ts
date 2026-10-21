@@ -1,5 +1,5 @@
 export type SettingsValues = {
-  profile: { name: string; email: string; bio: string };
+  profile: { name: string; email: string; bio: string; address: string };
   preferences: { theme: "light" | "dark" };
   notifications: { email: boolean; push: boolean };
   privacy: { visibility: "private" | "team" | "public"; analytics: boolean; personalization: boolean };
@@ -10,7 +10,7 @@ export const emptyPasswords = (): PasswordValues => ({ current: "", next: "", co
 
 export function defaults(user: { name: string; email: string }): SettingsValues {
   return {
-    profile: { name: user.name, email: user.email, bio: "" },
+    profile: { name: user.name, email: user.email, bio: "", address: "" },
     preferences: { theme: "light" },
     notifications: { email: false, push: false },
     privacy: { visibility: "private", analytics: false, personalization: false },
@@ -21,6 +21,7 @@ export function validateProfile(profile: SettingsValues["profile"]) {
   if (!profile.name.trim() || profile.name.trim().length > 100) errors.name = "Enter a name between 1 and 100 characters.";
   if (profile.email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email.trim())) errors.email = "Enter a valid email address (up to 254 characters).";
   if (profile.bio.length > 500) errors.bio = "Keep your bio to 500 characters or fewer.";
+  if (profile.address.length > 500) errors.address = "Keep your address to 500 characters or fewer.";
   return errors;
 }
 export function validatePasswords(values: PasswordValues) {
@@ -42,8 +43,8 @@ const sameKeys = (value: unknown, keys: string[]): value is Record<string, unkno
 export function validSettings(value: unknown): value is SettingsValues {
   if (!sameKeys(value, sections)) return false;
   const { profile: p, preferences: a, notifications: n, privacy: d } = value;
-  return sameKeys(p, ["name", "email", "bio"]) &&
-    typeof p.name === "string" && typeof p.email === "string" && typeof p.bio === "string" &&
+  return sameKeys(p, ["name", "email", "bio", "address"]) &&
+    typeof p.name === "string" && typeof p.email === "string" && typeof p.bio === "string" && typeof p.address === "string" &&
     Object.keys(validateProfile(p as SettingsValues["profile"])).length === 0 &&
     sameKeys(a, ["theme"]) && ["light", "dark"].includes(String(a.theme)) &&
     sameKeys(n, ["email", "push"]) && typeof n.email === "boolean" && typeof n.push === "boolean" &&
@@ -63,6 +64,10 @@ export function readSettings(id: number, fallback: SettingsValues, storage: () =
     }
     let values = parsed.values;
     // Accept earlier records without resetting the account's other saved choices.
+    // Only the exact known legacy profile shape may receive an empty address.
+    if (sameKeys(values, sections) && sameKeys(values.profile, ["name", "email", "bio"])) {
+      values = { ...values, profile: { ...values.profile, address: "" } };
+    }
     // The removed language field is discarded and is never written again.
     if (sameKeys(values, sections) && sameKeys(values.preferences, ["theme", "language"]) &&
       typeof values.preferences.language === "string" && ["en", "ms", "zh"].includes(values.preferences.language)) {
