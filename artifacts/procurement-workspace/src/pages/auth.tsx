@@ -134,7 +134,7 @@ export default function AuthScreen() {
         <div className="flex items-center gap-2.5">
           <div className="grid h-8 w-8 place-items-center rounded bg-sidebar-primary font-bold text-sidebar-primary-foreground">P</div>
           <div>
-            <div className="font-bold leading-none tracking-tight">ProcureFlow</div>
+            <div className="font-bold leading-none tracking-tight">SupplyMate</div>
             <div className="num mt-1 text-[10px] uppercase tracking-widest text-sidebar-foreground/50">buying ledger</div>
           </div>
         </div>
@@ -154,7 +154,6 @@ export default function AuthScreen() {
         </div>
         <p className="text-[11px] leading-relaxed text-sidebar-foreground/50">Demo prototype. Supplier quotes are illustrative. Invoices are internal records, not tax-authority validated and not sent externally.</p>
       </aside>
-
       <main className="relative z-[1] flex min-h-[100dvh] flex-col px-5 py-8 md:justify-center md:px-14">
         <div className="mb-10 flex items-center gap-2.5 md:hidden">
           <div className="grid h-7 w-7 place-items-center rounded bg-sidebar-primary text-sm font-bold text-sidebar-primary-foreground">P</div>
