@@ -161,7 +161,7 @@ export default function AuthScreen() {
         </div>
         <div className="mx-auto w-full max-w-sm rise" key={isSignup ? "s" : "l"}>
           <div className="num mb-2 text-[11px] uppercase tracking-[0.2em] text-accent">{isSignup ? "New account" : "Welcome back"}</div>
-          <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{isSignup ? "Open your ledger" : "Sign in"}</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">{isSignup ? "Open your ledger" : "Login"}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{isSignup ? "Create an account to work in the shared procurement workspace." : "Pick up where the team left off."}</p>
 
           <div ref={alertRef} tabIndex={-1} role="alert" aria-live="assertive" className="outline-none">
