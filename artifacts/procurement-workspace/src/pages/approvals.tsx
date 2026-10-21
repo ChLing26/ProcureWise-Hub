@@ -8,7 +8,7 @@ export default function Approvals() {
   const items = (q.data ?? []).filter((r) => r.status === "pending_approval").sort((a, b) => +new Date(a.requiredDeliveryDate) - +new Date(b.requiredDeliveryDate));
   return (
     <>
-      <PageHead kicker="Queue" title="Pending review"><span className="num text-sm text-muted-foreground">{items.length} waiting · soonest deadline first</span></PageHead>
+      <PageHead kicker="Queue" title="Pending Reviews"><span className="num text-sm text-muted-foreground">{items.length} waiting · soonest deadline first</span></PageHead>
       {q.isLoading ? <Rows n={4} /> : q.isError ? <ErrorBox onRetry={() => q.refetch()} /> :
         !items.length ? <Empty title="Queue is clear" body="No requests are waiting for a manager decision." /> :
         <div className="grid gap-3 sm:grid-cols-2">
