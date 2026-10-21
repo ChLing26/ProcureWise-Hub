@@ -5,6 +5,7 @@ import { useListProcurementRequests } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
+import { StationeryDecor } from "@/components/stationery-decor";
 
 const NAV = [
   { href: "/", label: "Dashboard", icon: LayoutGrid },
@@ -48,6 +49,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="paper-grain min-h-[100dvh] md:flex">
+      <StationeryDecor />
       <aside className={cn("fixed inset-y-0 left-0 z-40 w-60 flex-col bg-sidebar text-sidebar-foreground transition-transform md:sticky md:top-0 md:h-[100dvh] md:translate-x-0 flex",
         open ? "translate-x-0" : "-translate-x-full")}>
         <div className="flex items-center gap-2.5 px-6 pt-6 pb-8">
@@ -79,7 +81,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
       {open && <div className="fixed inset-0 z-30 bg-foreground/30 md:hidden" onClick={() => setOpen(false)} />}
-      <div className="flex-1 min-w-0">
+      <div className="relative z-[1] flex-1 min-w-0">
         <header className="no-print sticky top-0 z-20 flex items-center gap-3 border-b bg-background/90 backdrop-blur px-4 py-3 md:hidden">
           <button type="button" aria-label="Open navigation menu" aria-expanded={open} onClick={() => setOpen(true)} data-testid="button-open-nav"><Menu className="h-5 w-5" /></button>
           <span className="font-bold">ProcureFlow</span>

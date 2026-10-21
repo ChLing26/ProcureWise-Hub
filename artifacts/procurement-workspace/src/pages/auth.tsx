@@ -4,6 +4,7 @@ import { Eye, EyeOff, Loader2, AlertTriangle, Info, ArrowRight } from "lucide-re
 import type { AccountCredentials, AccountRegistration } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { StationeryDecor } from "@/components/stationery-decor";
 
 type Field = "name" | "email" | "password" | "passwordConfirmation";
 type Errors = Partial<Record<Field, string>>;
@@ -128,7 +129,8 @@ export default function AuthScreen() {
 
   return (
     <div className="paper-grain min-h-[100dvh] md:grid md:grid-cols-[1.05fr_1fr]">
-      <aside className="relative hidden overflow-hidden bg-sidebar p-12 text-sidebar-foreground md:flex md:flex-col">
+      <StationeryDecor />
+      <aside className="relative z-[1] hidden overflow-hidden bg-sidebar p-12 text-sidebar-foreground md:flex md:flex-col">
         <div className="flex items-center gap-2.5">
           <div className="grid h-8 w-8 place-items-center rounded bg-sidebar-primary font-bold text-sidebar-primary-foreground">P</div>
           <div>
@@ -153,7 +155,7 @@ export default function AuthScreen() {
         <p className="text-[11px] leading-relaxed text-sidebar-foreground/50">Demo prototype. Supplier quotes are illustrative. Invoices are internal records, not tax-authority validated and not sent externally.</p>
       </aside>
 
-      <main className="flex min-h-[100dvh] flex-col px-5 py-8 md:justify-center md:px-14">
+      <main className="relative z-[1] flex min-h-[100dvh] flex-col px-5 py-8 md:justify-center md:px-14">
         <div className="mb-10 flex items-center gap-2.5 md:hidden">
           <div className="grid h-7 w-7 place-items-center rounded bg-sidebar-primary text-sm font-bold text-sidebar-primary-foreground">P</div>
           <span className="font-bold tracking-tight">ProcureFlow</span>
