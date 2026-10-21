@@ -1,2 +1,3 @@
 - [SME procurement workflow](procurement-workflow.md) — Buying journey, shared account scope, and unverified manager identity; supplier and certified invoice setup remain separate.
 - [ProcureFlow visual direction](visual-direction.md) — Preserve the soft pastel stationery palette when adopting layouts.
+- [Preview runtime freshness](preview-runtime.md) — A preview can serve an older router after task merges; compare served code with source before changing valid routes.

@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutGrid, FileStack, Stamp, Receipt, Sparkles, Menu, X, Info, RotateCw, LogOut, Loader2, Users } from "lucide-react";
+import { LayoutGrid, FileStack, Stamp, Receipt, Sparkles, Menu, X, Info, RotateCw, LogOut, Loader2, Users, Settings } from "lucide-react";
 import { useListProcurementRequests } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ const NAV = [
   { href: "/approvals", label: "Approvals", icon: Stamp },
   { href: "/invoices", label: "Invoices", icon: Receipt },
   { href: "/recommendations", label: "Insights", icon: Sparkles },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -38,7 +39,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const nav = (
     <nav className="flex flex-col gap-0.5 px-3">
       {NAV.map(({ href, label, icon: Icon }) => (
-        <Link key={href} href={href} onClick={() => setOpen(false)} data-testid={`link-nav-${label.toLowerCase()}`}
+        <Link key={href} href={href} onClick={() => setOpen(false)} aria-current={isActive(href) ? "page" : undefined} data-testid={`link-nav-${label.toLowerCase()}`}
           className={cn("group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
             isActive(href) ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50")}>
           {isActive(href) && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r bg-sidebar-primary" />}
@@ -98,7 +99,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </header>
         <header className="no-print sticky top-0 z-20 flex items-center gap-3 border-b bg-background/90 backdrop-blur px-4 py-3 md:hidden">
           <button type="button" aria-label="Open navigation menu" aria-expanded={open} onClick={() => setOpen(true)} data-testid="button-open-nav"><Menu className="h-5 w-5" /></button>
-          <span className="font-bold">ProcureFlow</span>
+          <span className="font-bold">{loc === "/settings" ? "Settings" : "ProcureFlow"}</span>
           {user && <span className="ml-auto max-w-[40%] truncate text-xs text-muted-foreground" data-testid="text-user-name-mobile">{user.name}</span>}
           {user && logoutBtn("mobile", cn("border hover:bg-card", !user && "ml-auto"))}
         </header>
