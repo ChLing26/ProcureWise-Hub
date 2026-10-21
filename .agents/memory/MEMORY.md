@@ -1,1 +1,2 @@
 - [SME procurement workflow](procurement-workflow.md) — Buying journey, shared account scope, and unverified manager identity; supplier and certified invoice setup remain separate.
+- [ProcureFlow visual direction](visual-direction.md) — Preserve the soft pastel stationery palette when adopting layouts.

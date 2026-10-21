@@ -85,31 +85,31 @@
   --card: 42 67% 99%;
   --card-foreground: 164 24% 19%;
   --card-border: 35 31% 84%;
-  --sidebar: 164 39% 17%;
-  --sidebar-foreground: 42 35% 91%;
-  --sidebar-border: 164 26% 25%;
-  --sidebar-primary: 19 48% 55%;
-  --sidebar-primary-foreground: 42 67% 99%;
-  --sidebar-accent: 164 30% 24%;
-  --sidebar-accent-foreground: 42 35% 95%;
-  --sidebar-ring: 19 48% 55%;
+  --sidebar: 153 30% 93%;
+  --sidebar-foreground: 165 28% 20%;
+  --sidebar-border: 153 20% 82%;
+  --sidebar-primary: 345 45% 81%;
+  --sidebar-primary-foreground: 345 28% 29%;
+  --sidebar-accent: 153 32% 85%;
+  --sidebar-accent-foreground: 165 28% 23%;
+  --sidebar-ring: 153 24% 48%;
   --popover: 42 67% 99%;
   --popover-foreground: 164 24% 19%;
   --popover-border: 35 31% 84%;
-  --primary: 161 31% 31%;
+  --primary: 154 25% 35%;
   --primary-foreground: 42 67% 99%;
-  --secondary: 194 38% 89%;
-  --secondary-foreground: 188 30% 28%;
+  --secondary: 197 39% 91%;
+  --secondary-foreground: 188 27% 29%;
   --muted: 38 32% 91%;
   --muted-foreground: 160 10% 43%;
-  --accent: 19 48% 55%;
+  --accent: 345 27% 43%;
   --accent-foreground: 42 67% 99%;
   --destructive: 3 57% 54%;
   --destructive-foreground: 42 67% 99%;
   --input: 34 29% 79%;
   --ring: 161 31% 42%;
   --chart-1: 161 31% 36%;
-  --chart-2: 19 48% 55%;
+  --chart-2: 345 35% 70%;
   --chart-3: 202 47% 68%;
   --chart-4: 43 59% 66%;
   --chart-5: 278 25% 66%;
@@ -207,24 +207,24 @@
   --card: 42 67% 99%;
   --card-foreground: 164 24% 19%;
   --card-border: 35 31% 84%;
-  --sidebar: 164 39% 17%;
-  --sidebar-foreground: 42 35% 91%;
-  --sidebar-border: 164 26% 25%;
-  --sidebar-primary: 19 48% 55%;
-  --sidebar-primary-foreground: 42 67% 99%;
-  --sidebar-accent: 164 30% 24%;
-  --sidebar-accent-foreground: 42 35% 95%;
-  --sidebar-ring: 19 48% 55%;
+  --sidebar: 153 30% 93%;
+  --sidebar-foreground: 165 28% 20%;
+  --sidebar-border: 153 20% 82%;
+  --sidebar-primary: 345 45% 81%;
+  --sidebar-primary-foreground: 345 28% 29%;
+  --sidebar-accent: 153 32% 85%;
+  --sidebar-accent-foreground: 165 28% 23%;
+  --sidebar-ring: 153 24% 48%;
   --popover: 42 67% 99%;
   --popover-foreground: 164 24% 19%;
   --popover-border: 35 31% 84%;
-  --primary: 161 31% 31%;
+  --primary: 154 25% 35%;
   --primary-foreground: 42 67% 99%;
-  --secondary: 194 38% 89%;
-  --secondary-foreground: 188 30% 28%;
+  --secondary: 197 39% 91%;
+  --secondary-foreground: 188 27% 29%;
   --muted: 38 32% 91%;
   --muted-foreground: 160 10% 43%;
-  --accent: 19 48% 55%;
+  --accent: 345 27% 43%;
   --accent-foreground: 42 67% 99%;
   --destructive: 3 57% 54%;
   --destructive-foreground: 42 67% 99%;
@@ -233,7 +233,7 @@
   --input: 34 29% 79%;
   --ring: 161 31% 42%;
   --chart-1: 161 31% 36%;
-  --chart-2: 19 48% 55%;
+  --chart-2: 345 35% 70%;
   --chart-3: 202 47% 68%;
   --chart-4: 43 59% 66%;
   --chart-5: 278 25% 66%;
@@ -406,6 +406,9 @@ button, a { transition: color .18s ease, background-color .18s ease, border-colo
 .stationery-ruler { top: -2rem; right: -2.5rem; width: 152px; opacity: .45; transform: rotate(11deg); }
 .stationery-pencils { right: -1.75rem; bottom: -2.5rem; width: 128px; opacity: .42; transform: rotate(-5deg); }
 aside.bg-sidebar { box-shadow: 5px 0 24px hsl(28 27% 48% / .05); }
+aside.bg-sidebar [class*="text-sidebar-foreground/"] { color: hsl(var(--sidebar-foreground) / .85); }
+.bg-primary.text-primary-foreground { background-color: hsl(153 32% 80%); color: hsl(165 28% 23%); }
+.bg-primary.text-primary-foreground:hover { background-color: hsl(153 32% 75%); }
 aside.bg-sidebar::before { content:""; position:absolute; width:56px; height:22px; border:3px solid hsl(202 47% 68%); border-radius:18px; top:18px; right:-19px; transform:rotate(38deg); opacity:.65; pointer-events:none; }
 aside.bg-sidebar::after { content:""; position:absolute; bottom:0; left:0; right:0; height:118px; pointer-events:none; opacity:.45; background:linear-gradient(135deg, transparent 44%, hsl(348 45% 66% / .17) 44% 48%, transparent 48%), linear-gradient(45deg, transparent 56%, hsl(202 47% 68% / .2) 56% 61%, transparent 61%); }
 aside.bg-sidebar > * { position:relative; z-index:1; }
