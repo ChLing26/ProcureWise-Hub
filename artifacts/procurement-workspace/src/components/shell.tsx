@@ -58,7 +58,7 @@ export function Shell({ children }: { children: ReactNode }) {
         <div className="flex items-center gap-2.5 px-6 pt-6 pb-8">
           <div className="grid h-7 w-7 place-items-center rounded bg-sidebar-primary text-sidebar-primary-foreground font-bold text-sm">P</div>
           <div>
-            <div className="font-bold tracking-tight leading-none">ProcureFlow</div>
+            <div className="font-bold tracking-tight leading-none">SupplyMate</div>
             <div className="num text-[10px] uppercase tracking-widest text-sidebar-foreground/50 mt-1">by TriHack</div>
           </div>
           <button type="button" aria-label="Close navigation menu" className="ml-auto md:hidden" onClick={() => setOpen(false)} data-testid="button-close-nav"><X className="h-4 w-4" /></button>
