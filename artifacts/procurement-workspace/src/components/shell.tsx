@@ -1,9 +1,10 @@
 import { type ReactNode, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutGrid, FileStack, Stamp, Receipt, Sparkles, Menu, X, Info, RotateCw } from "lucide-react";
+import { LayoutGrid, FileStack, Stamp, Receipt, Sparkles, Menu, X, Info, RotateCw, LogOut, Loader2, Users } from "lucide-react";
 import { useListProcurementRequests } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
 
 const NAV = [
   { href: "/", label: "Dashboard", icon: LayoutGrid },
@@ -16,6 +17,16 @@ const NAV = [
 export function Shell({ children }: { children: ReactNode }) {
   const [loc] = useLocation();
   const [open, setOpen] = useState(false);
+  const { user, logout, isLoggingOut, logoutError } = useAuth();
+  const doLogout = () => { if (!isLoggingOut) logout().catch(() => {}); };
+  const initials = (user?.name ?? "").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("") || "?";
+  const logoutBtn = (id: string, cls: string) => (
+    <button type="button" onClick={doLogout} disabled={isLoggingOut} aria-busy={isLoggingOut} data-testid={`button-logout-${id}`}
+      className={cn("inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition disabled:opacity-60", cls)}>
+      {isLoggingOut ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <LogOut className="h-3.5 w-3.5" aria-hidden />}
+      {isLoggingOut ? "Signing out" : "Sign out"}
+    </button>
+  );
   const { data } = useListProcurementRequests();
   const pending = data?.filter((r) => r.status === "pending_approval").length ?? 0;
   const isActive = (h: string) => (h === "/" ? loc === "/" : loc.startsWith(h));
@@ -45,10 +56,24 @@ export function Shell({ children }: { children: ReactNode }) {
             <div className="font-bold tracking-tight leading-none">ProcureFlow</div>
             <div className="num text-[10px] uppercase tracking-widest text-sidebar-foreground/50 mt-1">buying ledger</div>
           </div>
-          <button className="ml-auto md:hidden" onClick={() => setOpen(false)} data-testid="button-close-nav"><X className="h-4 w-4" /></button>
+          <button type="button" aria-label="Close navigation menu" className="ml-auto md:hidden" onClick={() => setOpen(false)} data-testid="button-close-nav"><X className="h-4 w-4" /></button>
         </div>
         {nav}
-        <div className="mt-auto m-3 rounded-md border border-sidebar-border p-3 text-[11px] leading-relaxed text-sidebar-foreground/60">
+        {user && (
+          <div className="mt-auto mx-3 rounded-md bg-sidebar-accent/60 p-3" data-testid="panel-account">
+            <div className="flex items-center gap-2.5">
+              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-sidebar-primary text-xs font-bold text-sidebar-primary-foreground" aria-hidden>{initials}</div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold" data-testid="text-user-name">{user.name}</div>
+                <div className="truncate text-[11px] text-sidebar-foreground/55" data-testid="text-user-email">{user.email}</div>
+              </div>
+            </div>
+            <div className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-sidebar-foreground/60"><Users className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />All accounts share one procurement dataset. Accounts do not verify manager authority.</div>
+            {logoutBtn("desktop", "mt-2 border border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent")}
+            {logoutError && <p role="alert" className="mt-2 text-[11px] text-sidebar-primary" data-testid="error-logout-desktop">{logoutError}</p>}
+          </div>
+        )}
+        <div className={cn(user ? "" : "mt-auto", "m-3 rounded-md border border-sidebar-border p-3 text-[11px] leading-relaxed text-sidebar-foreground/60")}>
           <div className="flex items-center gap-1.5 font-semibold text-sidebar-foreground/90 mb-1"><Info className="h-3 w-3" /> Demo prototype</div>
           Supplier quotes are illustrative. Manager identity is self-entered. Invoices are internal records, not tax-authority validated and not sent externally.
         </div>
@@ -56,9 +81,12 @@ export function Shell({ children }: { children: ReactNode }) {
       {open && <div className="fixed inset-0 z-30 bg-foreground/30 md:hidden" onClick={() => setOpen(false)} />}
       <div className="flex-1 min-w-0">
         <header className="no-print sticky top-0 z-20 flex items-center gap-3 border-b bg-background/90 backdrop-blur px-4 py-3 md:hidden">
-          <button onClick={() => setOpen(true)} data-testid="button-open-nav"><Menu className="h-5 w-5" /></button>
+          <button type="button" aria-label="Open navigation menu" aria-expanded={open} onClick={() => setOpen(true)} data-testid="button-open-nav"><Menu className="h-5 w-5" /></button>
           <span className="font-bold">ProcureFlow</span>
+          {user && <span className="ml-auto max-w-[40%] truncate text-xs text-muted-foreground" data-testid="text-user-name-mobile">{user.name}</span>}
+          {user && logoutBtn("mobile", cn("border hover:bg-card", !user && "ml-auto"))}
         </header>
+        {logoutError && <p role="alert" className="no-print border-b border-destructive/30 bg-destructive/5 px-4 py-2 text-xs text-destructive md:hidden" data-testid="error-logout-mobile">{logoutError}</p>}
         <main className="mx-auto max-w-6xl px-4 py-6 md:px-10 md:py-10">{children}</main>
       </div>
     </div>

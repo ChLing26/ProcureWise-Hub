@@ -1,1 +1,1 @@
-- [SME procurement workflow](procurement-workflow.md) — Target users and requested buying journey; live supplier data and certified invoicing need explicit setup.
+- [SME procurement workflow](procurement-workflow.md) — Buying journey, shared account scope, and unverified manager identity; supplier and certified invoice setup remain separate.

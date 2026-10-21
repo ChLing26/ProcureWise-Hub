@@ -1,6 +1,6 @@
-# [Project name]
+# ProcureFlow
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Shared procurement workspace for SME buying teams, with persistent email-and-password accounts.
 
 ## Run & Operate
 
@@ -9,6 +9,8 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- `pnpm --filter @workspace/db run migrate` — repeatable, additive procurement and account/session schema setup; also runs after task merges
+- `pnpm --filter @workspace/api-server test` — account/session API checks plus isolated empty-schema bootstrap, procurement workflow, and process-restart checks (cleans up its own data)
 - Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
@@ -26,7 +28,15 @@ _Populate as you build — short repo map plus pointers to the source-of-truth f
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Authentication uses the explicitly requested local email/password accounts and PostgreSQL sessions, not an external identity provider.
+
+## Account operation
+
+- Run the additive migrations before starting the API against either a new or existing database. Procurement storage is bootstrapped before account/session storage; existing procurement records are never recreated or reseeded.
+- Sessions have a fixed seven-day lifetime. Passwords use salted scrypt; only hashes of opaque session tokens are stored. `SESSION_SECRET` is not needed for these database-backed opaque sessions.
+- Set `NODE_ENV=production` for production serving so session cookies are Secure. The API artifact already sets this. Use HTTPS for production.
+- Requests must come through the same-origin app proxy. JSON mutations require `X-ProcureFlow-Request: 1`; the shared API client supplies this automatically. No cross-origin CORS access is granted.
+- Password recovery, email verification, invitations, roles, and private datasets are deliberately outside the current account scope.
 
 ## Product
 

@@ -17,6 +17,12 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _unauthorizedHandler: (() => void) | null = null;
+
+/** Session boundary notification; never install a bearer token for web sessions. */
+export function setUnauthorizedHandler(handler: (() => void) | null): void {
+  _unauthorizedHandler = handler;
+}
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -336,6 +342,11 @@ export async function customFetch<T = unknown>(
   }
 
   const headers = mergeHeaders(isRequest(input) ? input.headers : undefined, headersInit);
+  if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+    headers.set("x-procureflow-request", "1");
+    // Bodyless logout still uses JSON content type for the mutation guard.
+    if (!headers.has("content-type")) headers.set("content-type", "application/json");
+  }
 
   if (
     typeof init.body === "string" &&
@@ -360,9 +371,12 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  const response = await fetch(input, { credentials: "same-origin", ...init, method, headers });
 
   if (!response.ok) {
+    if (response.status === 401 && !/\/auth\//.test(requestInfo.url)) {
+      _unauthorizedHandler?.();
+    }
     const errorData = await parseErrorBody(response, method);
     throw new ApiError(response, errorData, requestInfo);
   }

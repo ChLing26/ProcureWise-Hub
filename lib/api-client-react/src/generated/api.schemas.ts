@@ -5,6 +5,49 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface AccountUser {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export interface AccountCredentials {
+  /** @maxLength 254 */
+  email: string;
+  /**
+     * @minLength 1
+     * @maxLength 128
+     */
+  password: string;
+}
+
+export interface AccountRegistration {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  name: string;
+  /** @maxLength 254 */
+  email: string;
+  /**
+     * @minLength 12
+     * @maxLength 128
+     */
+  password: string;
+  /**
+     * @minLength 12
+     * @maxLength 128
+     */
+  passwordConfirmation: string;
+}
+
+export type AccountErrorFields = {[key: string]: string};
+
+export interface AccountError {
+  error: string;
+  fields?: AccountErrorFields;
+}
+
 export interface HealthStatus {
   status: string;
 }
@@ -146,4 +189,9 @@ export interface ProcurementRecommendations {
   generatedAt: string;
   historyCount: number;
 }
+
+/**
+ * Safe account or session error
+ */
+export type AuthErrorResponse = AccountError;
 

@@ -8,6 +8,60 @@
 import * as zod from 'zod';
 
 
+export const registerAccountBodyNameMax = 100;
+
+export const registerAccountBodyEmailMax = 254;
+
+export const registerAccountBodyPasswordMin = 12;
+export const registerAccountBodyPasswordMax = 128;
+
+export const registerAccountBodyPasswordConfirmationMin = 12;
+export const registerAccountBodyPasswordConfirmationMax = 128;
+
+
+
+export const RegisterAccountBody = zod.object({
+  "name": zod.string().min(1).max(registerAccountBodyNameMax),
+  "email": zod.string().email().max(registerAccountBodyEmailMax),
+  "password": zod.string().min(registerAccountBodyPasswordMin).max(registerAccountBodyPasswordMax),
+  "passwordConfirmation": zod.string().min(registerAccountBodyPasswordConfirmationMin).max(registerAccountBodyPasswordConfirmationMax)
+})
+
+export const RegisterAccountResponse = zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "email": zod.string().email()
+})
+
+
+export const loginAccountBodyEmailMax = 254;
+
+export const loginAccountBodyPasswordMax = 128;
+
+
+
+export const LoginAccountBody = zod.object({
+  "email": zod.string().email().max(loginAccountBodyEmailMax),
+  "password": zod.string().min(1).max(loginAccountBodyPasswordMax)
+})
+
+export const LoginAccountResponse = zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "email": zod.string().email()
+})
+
+
+export const GetCurrentUserResponse = zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "email": zod.string().email()
+})
+
+
+export const LogoutAccountResponse = zod.void()
+
+
 /**
  * Returns server health status
  * @summary Health check

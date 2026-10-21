@@ -6,6 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './accountCredentials';
+export * from './accountError';
+export * from './accountErrorFields';
+export * from './accountRegistration';
+export * from './accountUser';
+export * from './authErrorResponse';
 export * from './healthStatus';
 export * from './procurementActivity';
 export * from './procurementDashboard';
