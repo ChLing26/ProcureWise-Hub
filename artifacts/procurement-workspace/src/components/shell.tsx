@@ -21,6 +21,9 @@ export function Shell({ children }: { children: ReactNode }) {
   const { user, logout, isLoggingOut, logoutError } = useAuth();
   const doLogout = () => { if (!isLoggingOut) logout().catch(() => {}); };
   const initials = (user?.name ?? "").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("") || "?";
+  const pageLabel = loc.startsWith("/requests/")
+    ? "Compare supplier offers"
+    : NAV.find(({ href }) => href === "/" ? loc === "/" : loc.startsWith(href))?.label ?? "Workspace";
   const logoutBtn = (id: string, cls: string) => (
     <button type="button" onClick={doLogout} disabled={isLoggingOut} aria-busy={isLoggingOut} data-testid={`button-logout-${id}`}
       className={cn("inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition disabled:opacity-60", cls)}>
@@ -62,26 +65,37 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
         {nav}
         {user && (
-          <div className="mt-auto mx-3 rounded-md bg-sidebar-accent/60 p-3" data-testid="panel-account">
-            <div className="flex items-center gap-2.5">
-              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-sidebar-primary text-xs font-bold text-sidebar-primary-foreground" aria-hidden>{initials}</div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold" data-testid="text-user-name">{user.name}</div>
-                <div className="truncate text-[11px] text-sidebar-foreground/55" data-testid="text-user-email">{user.email}</div>
-              </div>
-            </div>
-            <div className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-sidebar-foreground/60"><Users className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />All accounts share one procurement dataset. Accounts do not verify manager authority.</div>
-            {logoutBtn("desktop", "mt-2 border border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent")}
-            {logoutError && <p role="alert" className="mt-2 text-[11px] text-sidebar-primary" data-testid="error-logout-desktop">{logoutError}</p>}
+          <div className="mx-3 mt-auto rounded-md border border-sidebar-border bg-sidebar-accent/35 p-3 text-[10px] leading-relaxed text-sidebar-foreground/65" data-testid="panel-account-scope">
+            <div className="mb-1 flex items-center gap-1.5 font-semibold text-sidebar-foreground/90"><Users className="h-3 w-3" aria-hidden />Shared workspace</div>
+            All accounts share one procurement dataset. Manager authority is not verified.
           </div>
         )}
-        <div className={cn(user ? "" : "mt-auto", "m-3 rounded-md border border-sidebar-border p-3 text-[11px] leading-relaxed text-sidebar-foreground/60")}>
+        <div className={cn(user ? "" : "mt-auto", "m-3 rounded-md border border-sidebar-border p-3 text-[10px] leading-relaxed text-sidebar-foreground/60")}>
           <div className="flex items-center gap-1.5 font-semibold text-sidebar-foreground/90 mb-1"><Info className="h-3 w-3" /> Demo prototype</div>
           Supplier quotes are illustrative. Manager identity is self-entered. Invoices are internal records, not tax-authority validated and not sent externally.
         </div>
       </aside>
       {open && <div className="fixed inset-0 z-30 bg-foreground/30 md:hidden" onClick={() => setOpen(false)} />}
       <div className="relative z-[1] flex-1 min-w-0">
+        <header className="no-print sticky top-0 z-20 hidden h-14 items-center justify-between border-b bg-background/90 px-6 backdrop-blur md:flex lg:px-9">
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+            <span>Procurement</span><span aria-hidden>/</span>
+            <strong className="font-semibold text-foreground" data-testid="text-breadcrumb-current">{pageLabel}</strong>
+          </div>
+          <div className="flex items-center gap-3">
+            {logoutError && <p role="alert" className="text-xs text-destructive" data-testid="error-logout-desktop">{logoutError}</p>}
+            {user && (
+              <>
+                <div className="grid h-8 w-8 place-items-center rounded-full bg-accent/20 text-[10px] font-bold text-accent" aria-hidden>{initials}</div>
+                <div className="hidden min-w-0 sm:block">
+                  <div className="max-w-40 truncate text-[11px] font-semibold" data-testid="text-user-name">{user.name}</div>
+                  <div className="max-w-40 truncate text-[9px] text-muted-foreground" data-testid="text-user-email">{user.email}</div>
+                </div>
+                {logoutBtn("desktop", "border border-border bg-card text-foreground hover:bg-muted")}
+              </>
+            )}
+          </div>
+        </header>
         <header className="no-print sticky top-0 z-20 flex items-center gap-3 border-b bg-background/90 backdrop-blur px-4 py-3 md:hidden">
           <button type="button" aria-label="Open navigation menu" aria-expanded={open} onClick={() => setOpen(true)} data-testid="button-open-nav"><Menu className="h-5 w-5" /></button>
           <span className="font-bold">ProcureFlow</span>
@@ -95,12 +109,13 @@ export function Shell({ children }: { children: ReactNode }) {
   );
 }
 
-export function PageHead({ kicker, title, children }: { kicker: string; title: string; children?: ReactNode }) {
+export function PageHead({ kicker, title, description, children }: { kicker: string; title: string; description?: string; children?: ReactNode }) {
   return (
     <div className="rise mb-8 flex flex-wrap items-end justify-between gap-4 border-b pb-5">
       <div>
         <div className="num text-[11px] uppercase tracking-[0.2em] text-accent mb-2">{kicker}</div>
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{title}</h1>
+        {description && <p className="mt-2 max-w-xl text-xs leading-relaxed text-muted-foreground">{description}</p>}
       </div>
       {children}
     </div>
