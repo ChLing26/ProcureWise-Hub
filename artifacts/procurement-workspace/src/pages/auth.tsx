@@ -135,7 +135,7 @@ export default function AuthScreen() {
           <div className="grid h-8 w-8 place-items-center rounded bg-sidebar-primary font-bold text-sidebar-primary-foreground">P</div>
           <div>
             <div className="font-bold leading-none tracking-tight">SupplyMate</div>
-            <div className="num mt-1 text-[10px] uppercase tracking-widest text-sidebar-foreground/50">buying ledger</div>
+            <div className="num mt-1 text-[10px] uppercase tracking-widest text-sidebar-foreground/50">by trihack</div>
           </div>
         </div>
         <div className="my-auto max-w-md rise">
