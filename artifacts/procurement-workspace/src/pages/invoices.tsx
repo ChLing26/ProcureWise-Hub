@@ -1,4 +1,4 @@
-import { useRef, useState, type Ref } from "react";
+import { useEffect, useRef, useState, type Ref } from "react";
 import { Link } from "wouter";
 import { Download, Loader2, Printer, ShieldAlert } from "lucide-react";
 import { useListProcurementInvoices, type ProcurementInvoice } from "@workspace/api-client-react";
@@ -29,6 +29,7 @@ function Sheet({ inv, sheetRef }: { inv: ProcurementInvoice; sheetRef: Ref<HTMLE
         </tbody>
       </table>
       <InvoiceSignatureRecord inv={inv} />
+      <InvoiceSignatureRecord inv={inv} supplier />
       <div className="rounded bg-muted/60 p-3 text-xs">
         <div className="text-muted-foreground mb-1">{inv.signatureType} · integrity hash, not a certified legal signature</div>
         <code className="num break-all">{inv.signature}</code>
@@ -45,6 +46,27 @@ export default function Invoices() {
   const [signing, setSigning] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const sheetRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!signing) return;
+    // Keep navigation and browser shortcuts from leaving a pending immutable save.
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    const blockNavigation = (event: MouseEvent) => {
+      if ((event.target as Element).closest("a, button")) { event.preventDefault(); event.stopPropagation(); }
+    };
+    const blockPrint = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "p") event.preventDefault();
+    };
+    document.body.dataset.invoiceSaving = "true";
+    window.addEventListener("beforeunload", warn);
+    document.addEventListener("click", blockNavigation, true);
+    document.addEventListener("keydown", blockPrint, true);
+    return () => {
+      delete document.body.dataset.invoiceSaving;
+      window.removeEventListener("beforeunload", warn);
+      document.removeEventListener("click", blockNavigation, true);
+      document.removeEventListener("keydown", blockPrint, true);
+    };
+  }, [signing]);
   const list = q.data ?? [];
   const cur = list.find((i) => i.id === sel) ?? list[0];
   async function exportPdf() {
@@ -69,9 +91,11 @@ export default function Invoices() {
         <div className="flex gap-2 items-start rounded-md border border-accent/30 bg-accent/5 p-3 text-xs mb-6"><ShieldAlert className="h-4 w-4 text-accent shrink-0" />Generated automatically on approval. These are internal buyer and supplier records for this demo, not tax documents.</div>
       </div>
       {pdfError && <p role="alert" className="no-print mb-4 text-sm text-destructive">{pdfError}</p>}
+      {signing && <p role="status" className="no-print mb-4 text-sm text-primary">Saving permanent signature evidence. Navigation, printing and download are paused until this finishes.</p>}
+      <p className="invoice-print-pending hidden">A signature is being saved. Wait for it to finish, then print a fresh copy.</p>
       {q.isLoading ? <Rows /> : q.isError ? <ErrorBox onRetry={() => q.refetch()} /> :
         !list.length ? <Empty title="No invoices yet" body="Approve a supplier offer and its invoice record will appear here."><Link href="/approvals" className="text-primary underline text-sm">Go to approvals</Link></Empty> :
-        <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        <div className="invoice-layout grid gap-6 lg:grid-cols-[280px_1fr]">
           <ul className="no-print rounded-md border bg-card divide-y self-start overflow-hidden">
             {list.map((i) => (
               <li key={i.id}><button disabled={signing || exporting} onClick={() => { setSel(i.id); setPdfError(null); }} data-testid={`button-invoice-${i.id}`}
@@ -83,7 +107,8 @@ export default function Invoices() {
           </ul>
           {cur && <div className="min-w-0">
             <Sheet inv={cur} sheetRef={sheetRef} />
-            <InvoiceSignatureForm key={cur.id} inv={cur} onBusyChange={setSigning} disabled={exporting} />
+            <InvoiceSignatureForm key={`account-${cur.id}`} inv={cur} onBusyChange={setSigning} disabled={exporting || signing} />
+            <InvoiceSignatureForm key={`supplier-${cur.id}`} inv={cur} supplier onBusyChange={setSigning} disabled={exporting || signing} />
           </div>}
         </div>}
     </>

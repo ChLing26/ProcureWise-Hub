@@ -5,9 +5,10 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import { CreateProcurementRequestBody, DecideProcurementRequestBody, DecideProcurementRequestParams, GetProcurementRequestParams,
   GetProcurementDashboardResponse, ListProcurementRequestsResponse, CreateProcurementRequestResponse, GetProcurementRequestResponse,
   DecideProcurementRequestResponse, ListProcurementInvoicesResponse, GetProcurementRecommendationsResponse,
-  SignProcurementInvoiceParams, SignProcurementInvoiceBody, SignProcurementInvoiceResponse, GetCurrentUserResponse } from "@workspace/api-zod";
+   SignProcurementInvoiceParams, SignProcurementInvoiceBody, SignProcurementInvoiceResponse, GetCurrentUserResponse,
+   SignSupplierProcurementInvoiceParams, SignSupplierProcurementInvoiceBody } from "@workspace/api-zod";
 import { createRecord, listRecords, makeInvoice, round } from "../lib/procurement";
-import { attachElectronicSignature } from "../lib/invoice-signature";
+import { attachElectronicSignature, attachSupplierSignature } from "../lib/invoice-signature";
 
 const router: IRouter = Router();
 router.get("/procurement/requests", async (_req,res): Promise<void> => {
@@ -46,9 +47,12 @@ router.post("/procurement/requests/:requestId/decision", async (req,res): Promis
 router.get("/procurement/invoices", async (_req,res): Promise<void> => {
   res.json(ListProcurementInvoicesResponse.parse((await listRecords()).flatMap(r => r.invoice ? [r.invoice] : [])));
 });
-router.post("/procurement/invoices/:invoiceId/signature", async (req, res): Promise<void> => {
-  const params = SignProcurementInvoiceParams.safeParse(req.params);
-  const input = SignProcurementInvoiceBody.safeParse({
+// Both operations lock the same row and merge only the new evidence into raw
+// stored JSON. Schema parsing must not normalize or strip existing evidence.
+for (const supplier of [false, true]) {
+router.post(`/procurement/invoices/:invoiceId/${supplier ? "supplier-signature" : "signature"}`, async (req, res): Promise<void> => {
+  const params = (supplier ? SignSupplierProcurementInvoiceParams : SignProcurementInvoiceParams).safeParse(req.params);
+  const input = (supplier ? SignSupplierProcurementInvoiceBody : SignProcurementInvoiceBody).safeParse({
     ...req.body,
     typedName: typeof req.body?.typedName === "string" ? req.body.typedName.trim() : req.body?.typedName,
   });
@@ -64,16 +68,21 @@ router.post("/procurement/invoices/:invoiceId/signature", async (req, res): Prom
     if (!record.invoice || record.status !== "approved") {
       return { status: 404, data: { error: "Invoice not found." } };
     }
-    if (record.invoice.electronicSignature) {
-      return { status: 409, data: { error: "This invoice has already been signed. Its signature cannot be replaced." } };
+    const key = supplier ? "supplierSignature" : "electronicSignature";
+    if (record.invoice[key]) {
+      return { status: 409, data: { error: `The ${supplier ? "supplier" : "account"} signature is already recorded and cannot be replaced.` } };
     }
-    const invoice = SignProcurementInvoiceResponse.parse(attachElectronicSignature(record.invoice, input.data.typedName, account));
-    await tx.update(procurementRecords).set({ data: { ...record, invoice } })
+    const signed = (supplier ? attachSupplierSignature : attachElectronicSignature)(record.invoice, input.data.typedName, account);
+    const raw = row.data as Record<string, unknown> & { invoice: Record<string, unknown> };
+    const invoice = { ...raw.invoice, [key]: signed[key] };
+    const response = SignProcurementInvoiceResponse.parse(invoice);
+    await tx.update(procurementRecords).set({ data: { ...raw, invoice } })
       .where(eq(procurementRecords.id, row.id));
-    return { status: 200, data: invoice };
+    return { status: 200, data: response };
   });
   res.status(result.status).json(result.data);
 });
+}
 router.get("/procurement/dashboard", async (_req,res): Promise<void> => {
   const records = await listRecords();
   const approved = records.filter(r => r.status === "approved");

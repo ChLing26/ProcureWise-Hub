@@ -142,6 +142,19 @@ export interface InvoiceElectronicSignature {
   documentHash: string;
 }
 
+/**
+ * Internal entry by a workspace account; supplier identity and authority are not verified
+ */
+export interface InvoiceSupplierSignature {
+  typedName: string;
+  supplierName: string;
+  recordingAccountId: number;
+  recordingAccountName: string;
+  recordedAt: string;
+  consentVersion: string;
+  documentHash: string;
+}
+
 export interface ProcurementInvoice {
   id: number;
   reference: string;
@@ -158,6 +171,7 @@ export interface ProcurementInvoice {
   signature: string;
   signatureType: string;
   electronicSignature?: InvoiceElectronicSignature;
+  supplierSignature?: InvoiceSupplierSignature;
 }
 
 export type ProcurementRequestSummaryStatus = typeof ProcurementRequestSummaryStatus[keyof typeof ProcurementRequestSummaryStatus];

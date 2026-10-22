@@ -301,6 +301,31 @@ paths:
         "401": { description: Sign in required }
         "404": { description: Invoice not found }
         "409": { description: Invoice already signed }
+  /procurement/invoices/{invoiceId}/supplier-signature:
+    post:
+      operationId: signSupplierProcurementInvoice
+      tags: [procurement]
+      summary: Record an unverified supplier representative signature through a workspace account
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema: { type: integer, minimum: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InvoiceSignatureInput" }
+      responses:
+        "200":
+          description: Invoice with immutable supplier entry
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProcurementInvoice" }
+        "400": { description: Invalid trimmed name or missing explicit authority and intent consent }
+        "401": { description: Sign in required }
+        "404": { description: Invoice not found }
+        "409": { description: Supplier entry already recorded }
   /procurement/recommendations:
     get:
       operationId: getProcurementRecommendations
@@ -451,6 +476,18 @@ components:
         signedAt: { type: string, format: date-time }
         consentVersion: { type: string }
         documentHash: { type: string }
+    InvoiceSupplierSignature:
+      type: object
+      description: Internal entry by a workspace account; supplier identity and authority are not verified
+      required: [typedName, supplierName, recordingAccountId, recordingAccountName, recordedAt, consentVersion, documentHash]
+      properties:
+        typedName: { type: string }
+        supplierName: { type: string }
+        recordingAccountId: { type: integer }
+        recordingAccountName: { type: string }
+        recordedAt: { type: string, format: date-time }
+        consentVersion: { type: string }
+        documentHash: { type: string }
     ProcurementInvoice:
       type: object
       required: [id, reference, requestId, itemName, quantity, supplierName, buyerName, unitPrice, shippingFee, totalAmount, currency, issuedAt, signature, signatureType]
@@ -471,6 +508,8 @@ components:
         signatureType: { type: string }
         electronicSignature:
           $ref: "#/components/schemas/InvoiceElectronicSignature"
+        supplierSignature:
+          $ref: "#/components/schemas/InvoiceSupplierSignature"
     ProcurementRequestSummary:
       type: object
       required: [id, itemName, quantity, budgetAmount, currency, requiredDeliveryDate, deliveryLocation, requesterName, status, offerCount, createdAt]

@@ -268,7 +268,16 @@ export const CreateProcurementRequestResponse = zod.object({
   "signedAt": zod.coerce.date(),
   "consentVersion": zod.string(),
   "documentHash": zod.string()
-}).optional()
+}).optional(),
+  "supplierSignature": zod.object({
+  "typedName": zod.string(),
+  "supplierName": zod.string(),
+  "recordingAccountId": zod.number().int(),
+  "recordingAccountName": zod.string(),
+  "recordedAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "documentHash": zod.string()
+}).optional().describe('Internal entry by a workspace account; supplier identity and authority are not verified')
 }),zod.null()])
 }))
 
@@ -337,7 +346,16 @@ export const GetProcurementRequestResponse = zod.object({
   "signedAt": zod.coerce.date(),
   "consentVersion": zod.string(),
   "documentHash": zod.string()
-}).optional()
+}).optional(),
+  "supplierSignature": zod.object({
+  "typedName": zod.string(),
+  "supplierName": zod.string(),
+  "recordingAccountId": zod.number().int(),
+  "recordingAccountName": zod.string(),
+  "recordedAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "documentHash": zod.string()
+}).optional().describe('Internal entry by a workspace account; supplier identity and authority are not verified')
 }),zod.null()])
 }))
 
@@ -417,7 +435,16 @@ export const DecideProcurementRequestResponse = zod.object({
   "signedAt": zod.coerce.date(),
   "consentVersion": zod.string(),
   "documentHash": zod.string()
-}).optional()
+}).optional(),
+  "supplierSignature": zod.object({
+  "typedName": zod.string(),
+  "supplierName": zod.string(),
+  "recordingAccountId": zod.number().int(),
+  "recordingAccountName": zod.string(),
+  "recordedAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "documentHash": zod.string()
+}).optional().describe('Internal entry by a workspace account; supplier identity and authority are not verified')
 }),zod.null()])
 }))
 
@@ -447,7 +474,16 @@ export const ListProcurementInvoicesResponseItem = zod.object({
   "signedAt": zod.coerce.date(),
   "consentVersion": zod.string(),
   "documentHash": zod.string()
-}).optional()
+}).optional(),
+  "supplierSignature": zod.object({
+  "typedName": zod.string(),
+  "supplierName": zod.string(),
+  "recordingAccountId": zod.number().int(),
+  "recordingAccountName": zod.string(),
+  "recordedAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "documentHash": zod.string()
+}).optional().describe('Internal entry by a workspace account; supplier identity and authority are not verified')
 })
 export const ListProcurementInvoicesResponse = zod.array(ListProcurementInvoicesResponseItem)
 
@@ -494,7 +530,71 @@ export const SignProcurementInvoiceResponse = zod.object({
   "signedAt": zod.coerce.date(),
   "consentVersion": zod.string(),
   "documentHash": zod.string()
-}).optional()
+}).optional(),
+  "supplierSignature": zod.object({
+  "typedName": zod.string(),
+  "supplierName": zod.string(),
+  "recordingAccountId": zod.number().int(),
+  "recordingAccountName": zod.string(),
+  "recordedAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "documentHash": zod.string()
+}).optional().describe('Internal entry by a workspace account; supplier identity and authority are not verified')
+})
+
+
+/**
+ * @summary Record an unverified supplier representative signature through a workspace account
+ */
+
+
+
+export const SignSupplierProcurementInvoiceParams = zod.object({
+  "invoiceId": zod.coerce.number().int().min(1)
+})
+
+export const signSupplierProcurementInvoiceBodyTypedNameMin = 2;
+export const signSupplierProcurementInvoiceBodyTypedNameMax = 120;
+
+
+
+export const SignSupplierProcurementInvoiceBody = zod.object({
+  "typedName": zod.string().min(signSupplierProcurementInvoiceBodyTypedNameMin).max(signSupplierProcurementInvoiceBodyTypedNameMax),
+  "consent": zod.literal(true)
+})
+
+export const SignSupplierProcurementInvoiceResponse = zod.object({
+  "id": zod.number().int(),
+  "reference": zod.string(),
+  "requestId": zod.number().int(),
+  "itemName": zod.string(),
+  "quantity": zod.number().int(),
+  "supplierName": zod.string(),
+  "buyerName": zod.string(),
+  "unitPrice": zod.number(),
+  "shippingFee": zod.number(),
+  "totalAmount": zod.number(),
+  "currency": zod.string(),
+  "issuedAt": zod.coerce.date(),
+  "signature": zod.string(),
+  "signatureType": zod.string(),
+  "electronicSignature": zod.object({
+  "typedName": zod.string(),
+  "accountId": zod.number().int(),
+  "accountName": zod.string(),
+  "signedAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "documentHash": zod.string()
+}).optional(),
+  "supplierSignature": zod.object({
+  "typedName": zod.string(),
+  "supplierName": zod.string(),
+  "recordingAccountId": zod.number().int(),
+  "recordingAccountName": zod.string(),
+  "recordedAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "documentHash": zod.string()
+}).optional().describe('Internal entry by a workspace account; supplier identity and authority are not verified')
 })
 
 

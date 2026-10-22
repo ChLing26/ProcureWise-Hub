@@ -26,3 +26,11 @@ Treat an invoice's electronic signature as permanent consent evidence. Future co
 **Why:** Downloaded PDF copies can remain outside the workspace. Silently replacing a signature or changing signed content would leave conflicting versions of the same invoice.
 
 **How to apply:** Preserve the original signed evidence when adding invoice editing, countersigning, or reissuing. An internal account signature must not be described as verified supplier consent or certificate-backed legal certification.
+
+## Supplier signature scope
+
+The supplier signature is an internal typed entry recorded by a signed-in workspace account, not an independently authenticated supplier action. The user confirmed this scope rather than supplier invitations or public signing links.
+
+**Why:** The entered representative and recording account can be different people. Treating the entry as verified supplier identity or authority would overstate the evidence.
+
+**How to apply:** Keep representative identity separate from recording identity and disclose that supplier identity and authority are unverified. Do not add supplier roles, portals, invitations, or legal certification without a new product decision.

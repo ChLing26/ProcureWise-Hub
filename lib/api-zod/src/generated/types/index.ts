@@ -15,6 +15,7 @@ export * from './authErrorResponse';
 export * from './healthStatus';
 export * from './invoiceElectronicSignature';
 export * from './invoiceSignatureInput';
+export * from './invoiceSupplierSignature';
 export * from './procurementActivity';
 export * from './procurementDashboard';
 export * from './procurementDecisionInput';

@@ -439,6 +439,10 @@ table td, table th { border-color:hsl(var(--border) / .75); }
   .rounded-md.border.bg-card, .rounded-lg.border.bg-card { box-shadow:0 5px 18px hsl(28 27% 48% / .06); }
 }
 @media print {
+  .invoice-layout { display:block!important; width:100%!important; }
+  .invoice-signature-record { break-inside:avoid; }
+  body[data-invoice-saving="true"] article[data-testid^="invoice-"] { display:none!important; }
+  body[data-invoice-saving="true"] .invoice-print-pending { display:block!important; }
   body { background:#fff !important; background-image:none !important; color:#222 !important; }
   .paper-grain::after { display:none; }
   .stationery-decor { display:none; }
