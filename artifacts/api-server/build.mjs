@@ -17,7 +17,10 @@ async function buildAll() {
   await esbuild({
     entryPoints: [
       path.resolve(artifactDir, "src/index.ts"),
-      ...(process.argv.includes("--test") ? [path.resolve(artifactDir, "src/test/auth.test.ts")] : []),
+      ...(process.argv.includes("--test") ? [
+        path.resolve(artifactDir, "src/test/auth.test.ts"),
+        path.resolve(artifactDir, "src/lib/invoice-signature.test.ts"),
+      ] : []),
     ],
     platform: "node",
     bundle: true,

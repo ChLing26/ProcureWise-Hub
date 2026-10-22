@@ -185,7 +185,15 @@ export const CreateProcurementRequestResponse = zod.object({
   "currency": zod.string(),
   "issuedAt": zod.coerce.date(),
   "signature": zod.string(),
-  "signatureType": zod.string()
+  "signatureType": zod.string(),
+  "electronicSignature": zod.object({
+  "typedName": zod.string(),
+  "accountId": zod.number().int(),
+  "accountName": zod.string(),
+  "signedAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "documentHash": zod.string()
+}).optional()
 }),zod.null()])
 }))
 
@@ -246,7 +254,15 @@ export const GetProcurementRequestResponse = zod.object({
   "currency": zod.string(),
   "issuedAt": zod.coerce.date(),
   "signature": zod.string(),
-  "signatureType": zod.string()
+  "signatureType": zod.string(),
+  "electronicSignature": zod.object({
+  "typedName": zod.string(),
+  "accountId": zod.number().int(),
+  "accountName": zod.string(),
+  "signedAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "documentHash": zod.string()
+}).optional()
 }),zod.null()])
 }))
 
@@ -318,7 +334,15 @@ export const DecideProcurementRequestResponse = zod.object({
   "currency": zod.string(),
   "issuedAt": zod.coerce.date(),
   "signature": zod.string(),
-  "signatureType": zod.string()
+  "signatureType": zod.string(),
+  "electronicSignature": zod.object({
+  "typedName": zod.string(),
+  "accountId": zod.number().int(),
+  "accountName": zod.string(),
+  "signedAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "documentHash": zod.string()
+}).optional()
 }),zod.null()])
 }))
 
@@ -340,9 +364,63 @@ export const ListProcurementInvoicesResponseItem = zod.object({
   "currency": zod.string(),
   "issuedAt": zod.coerce.date(),
   "signature": zod.string(),
-  "signatureType": zod.string()
+  "signatureType": zod.string(),
+  "electronicSignature": zod.object({
+  "typedName": zod.string(),
+  "accountId": zod.number().int(),
+  "accountName": zod.string(),
+  "signedAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "documentHash": zod.string()
+}).optional()
 })
 export const ListProcurementInvoicesResponse = zod.array(ListProcurementInvoicesResponseItem)
+
+
+/**
+ * @summary Record a consenting account's typed electronic signature
+ */
+
+
+
+export const SignProcurementInvoiceParams = zod.object({
+  "invoiceId": zod.coerce.number().int().min(1)
+})
+
+export const signProcurementInvoiceBodyTypedNameMin = 2;
+export const signProcurementInvoiceBodyTypedNameMax = 120;
+
+
+
+export const SignProcurementInvoiceBody = zod.object({
+  "typedName": zod.string().min(signProcurementInvoiceBodyTypedNameMin).max(signProcurementInvoiceBodyTypedNameMax),
+  "consent": zod.literal(true)
+})
+
+export const SignProcurementInvoiceResponse = zod.object({
+  "id": zod.number().int(),
+  "reference": zod.string(),
+  "requestId": zod.number().int(),
+  "itemName": zod.string(),
+  "quantity": zod.number().int(),
+  "supplierName": zod.string(),
+  "buyerName": zod.string(),
+  "unitPrice": zod.number(),
+  "shippingFee": zod.number(),
+  "totalAmount": zod.number(),
+  "currency": zod.string(),
+  "issuedAt": zod.coerce.date(),
+  "signature": zod.string(),
+  "signatureType": zod.string(),
+  "electronicSignature": zod.object({
+  "typedName": zod.string(),
+  "accountId": zod.number().int(),
+  "accountName": zod.string(),
+  "signedAt": zod.coerce.date(),
+  "consentVersion": zod.string(),
+  "documentHash": zod.string()
+}).optional()
+})
 
 
 /**

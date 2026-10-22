@@ -4,8 +4,10 @@ import { eq } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { CreateProcurementRequestBody, DecideProcurementRequestBody, DecideProcurementRequestParams, GetProcurementRequestParams,
   GetProcurementDashboardResponse, ListProcurementRequestsResponse, CreateProcurementRequestResponse, GetProcurementRequestResponse,
-  DecideProcurementRequestResponse, ListProcurementInvoicesResponse, GetProcurementRecommendationsResponse } from "@workspace/api-zod";
+  DecideProcurementRequestResponse, ListProcurementInvoicesResponse, GetProcurementRecommendationsResponse,
+  SignProcurementInvoiceParams, SignProcurementInvoiceBody, SignProcurementInvoiceResponse, GetCurrentUserResponse } from "@workspace/api-zod";
 import { createRecord, listRecords, makeInvoice, round } from "../lib/procurement";
+import { attachElectronicSignature } from "../lib/invoice-signature";
 
 const router: IRouter = Router();
 router.get("/procurement/requests", async (_req,res): Promise<void> => {
@@ -43,6 +45,34 @@ router.post("/procurement/requests/:requestId/decision", async (req,res): Promis
 });
 router.get("/procurement/invoices", async (_req,res): Promise<void> => {
   res.json(ListProcurementInvoicesResponse.parse((await listRecords()).flatMap(r => r.invoice ? [r.invoice] : [])));
+});
+router.post("/procurement/invoices/:invoiceId/signature", async (req, res): Promise<void> => {
+  const params = SignProcurementInvoiceParams.safeParse(req.params);
+  const input = SignProcurementInvoiceBody.safeParse({
+    ...req.body,
+    typedName: typeof req.body?.typedName === "string" ? req.body.typedName.trim() : req.body?.typedName,
+  });
+  if (!params.success || !input.success || input.data.consent !== true) {
+    res.status(400).json({ error: "Enter a name between 2 and 120 characters and confirm your consent." }); return;
+  }
+  const account = GetCurrentUserResponse.parse(res.locals.user);
+  const result = await db.transaction(async tx => {
+    const [row] = await tx.select().from(procurementRecords)
+      .where(eq(procurementRecords.id, params.data.invoiceId)).for("update");
+    if (!row) return { status: 404, data: { error: "Invoice not found." } };
+    const record = GetProcurementRequestResponse.parse(row.data);
+    if (!record.invoice || record.status !== "approved") {
+      return { status: 404, data: { error: "Invoice not found." } };
+    }
+    if (record.invoice.electronicSignature) {
+      return { status: 409, data: { error: "This invoice has already been signed. Its signature cannot be replaced." } };
+    }
+    const invoice = SignProcurementInvoiceResponse.parse(attachElectronicSignature(record.invoice, input.data.typedName, account));
+    await tx.update(procurementRecords).set({ data: { ...record, invoice } })
+      .where(eq(procurementRecords.id, row.id));
+    return { status: 200, data: invoice };
+  });
+  res.status(result.status).json(result.data);
 });
 router.get("/procurement/dashboard", async (_req,res): Promise<void> => {
   const records = await listRecords();

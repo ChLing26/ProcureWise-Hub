@@ -13,6 +13,8 @@ export * from './accountRegistration';
 export * from './accountUser';
 export * from './authErrorResponse';
 export * from './healthStatus';
+export * from './invoiceElectronicSignature';
+export * from './invoiceSignatureInput';
 export * from './procurementActivity';
 export * from './procurementDashboard';
 export * from './procurementDecisionInput';

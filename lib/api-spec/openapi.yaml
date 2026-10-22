@@ -196,6 +196,31 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ProcurementInvoice"
+  /procurement/invoices/{invoiceId}/signature:
+    post:
+      operationId: signProcurementInvoice
+      tags: [procurement]
+      summary: Record a consenting account's typed electronic signature
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema: { type: integer, minimum: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InvoiceSignatureInput" }
+      responses:
+        "200":
+          description: Persisted signed invoice
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProcurementInvoice" }
+        "400": { description: Invalid name or missing consent }
+        "401": { description: Sign in required }
+        "404": { description: Invoice not found }
+        "409": { description: Invoice already signed }
   /procurement/recommendations:
     get:
       operationId: getProcurementRecommendations
@@ -303,6 +328,22 @@ components:
         proximityScore: { type: number }
         reliabilityScore: { type: number }
         rank: { type: integer }
+    InvoiceSignatureInput:
+      type: object
+      required: [typedName, consent]
+      properties:
+        typedName: { type: string, minLength: 2, maxLength: 120 }
+        consent: { type: boolean, enum: [true] }
+    InvoiceElectronicSignature:
+      type: object
+      required: [typedName, accountId, accountName, signedAt, consentVersion, documentHash]
+      properties:
+        typedName: { type: string }
+        accountId: { type: integer }
+        accountName: { type: string }
+        signedAt: { type: string, format: date-time }
+        consentVersion: { type: string }
+        documentHash: { type: string }
     ProcurementInvoice:
       type: object
       required: [id, reference, requestId, itemName, quantity, supplierName, buyerName, unitPrice, shippingFee, totalAmount, currency, issuedAt, signature, signatureType]
@@ -321,6 +362,8 @@ components:
         issuedAt: { type: string, format: date-time }
         signature: { type: string }
         signatureType: { type: string }
+        electronicSignature:
+          $ref: "#/components/schemas/InvoiceElectronicSignature"
     ProcurementRequestSummary:
       type: object
       required: [id, itemName, quantity, budgetAmount, currency, requiredDeliveryDate, deliveryLocation, requesterName, status, offerCount, createdAt]

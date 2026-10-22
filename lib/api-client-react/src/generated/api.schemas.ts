@@ -90,6 +90,24 @@ export interface ProcurementOffer {
   rank: number;
 }
 
+export interface InvoiceSignatureInput {
+  /**
+     * @minLength 2
+     * @maxLength 120
+     */
+  typedName: string;
+  consent: true;
+}
+
+export interface InvoiceElectronicSignature {
+  typedName: string;
+  accountId: number;
+  accountName: string;
+  signedAt: string;
+  consentVersion: string;
+  documentHash: string;
+}
+
 export interface ProcurementInvoice {
   id: number;
   reference: string;
@@ -105,6 +123,7 @@ export interface ProcurementInvoice {
   issuedAt: string;
   signature: string;
   signatureType: string;
+  electronicSignature?: InvoiceElectronicSignature;
 }
 
 export type ProcurementRequestSummaryStatus = typeof ProcurementRequestSummaryStatus[keyof typeof ProcurementRequestSummaryStatus];

@@ -18,3 +18,11 @@ Accounts provide access to one shared procurement workspace, not private dataset
 **Why:** The user explicitly required the existing shared-workspace model to remain intact when adding login. Self-entered manager names are not verified account identities or authorization.
 
 **How to apply:** Do not silently introduce record ownership, organizations, or manager-only permissions. Any such change requires a separate product decision and must update the disclosures.
+
+## Signed invoice corrections
+
+Treat an invoice's electronic signature as permanent consent evidence. Future corrections should use an explicit amendment or reissue process rather than replacing the original signer or signed document.
+
+**Why:** Downloaded PDF copies can remain outside the workspace. Silently replacing a signature or changing signed content would leave conflicting versions of the same invoice.
+
+**How to apply:** Preserve the original signed evidence when adding invoice editing, countersigning, or reissuing. An internal account signature must not be described as verified supplier consent or certificate-backed legal certification.

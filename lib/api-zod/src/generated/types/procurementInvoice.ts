@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { InvoiceElectronicSignature } from './invoiceElectronicSignature';
 
 export interface ProcurementInvoice {
   id: number;
@@ -21,4 +22,5 @@ export interface ProcurementInvoice {
   issuedAt: Date;
   signature: string;
   signatureType: string;
+  electronicSignature?: InvoiceElectronicSignature;
 }
