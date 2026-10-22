@@ -27,3 +27,7 @@ export * from './procurementRequestDetail';
 export * from './procurementRequestInput';
 export * from './procurementRequestSummary';
 export * from './procurementRequestSummaryStatus';
+export * from './secretInput';
+export * from './secretMetadata';
+export * from './secretReplacement';
+export * from './toolsCapabilities';

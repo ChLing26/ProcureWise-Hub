@@ -36,7 +36,14 @@ _Populate as you build — short repo map plus pointers to the source-of-truth f
 - Sessions have a fixed seven-day lifetime. Passwords use salted scrypt; only hashes of opaque session tokens are stored. `SESSION_SECRET` is not needed for these database-backed opaque sessions.
 - Set `NODE_ENV=production` for production serving so session cookies are Secure. The API artifact already sets this. Use HTTPS for production.
 - Requests must come through the same-origin app proxy. JSON mutations require `X-ProcureFlow-Request: 1`; the shared API client supplies this automatically. No cross-origin CORS access is granted.
-- Password recovery, email verification, invitations, roles, and private datasets are deliberately outside the current account scope.
+- Password recovery, email verification, invitations, general role management, and private datasets are deliberately outside the current account scope. Tools-only administration uses a trusted operator allowlist, not public role assignment.
+
+## Tools secrets
+
+- See [operator setup and recovery guidance](docs/tools-secrets-setup.md) before enabling writes.
+- Server configuration: `TOOLS_ADMIN_ACCOUNT_IDS` designates existing account IDs; separate `TOOLS_SECRETS_ENCRYPTION_KEY` is a Replit Secret containing 32 random bytes encoded as 64 hex characters. No designation or invalid encryption configuration means writes fail closed.
+- These are encrypted application secrets, not Replit project Secrets or environment-variable administration. Storing `GEMINI_API_KEY` does not switch AI providers or activate Gemini.
+- Revoke any credential pasted into chat. Only enter a newly rotated replacement through New secret after trusted setup. Preserve the encryption key separately with secure database backups; never change it casually.
 
 ## Product
 

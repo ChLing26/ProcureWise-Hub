@@ -19,6 +19,7 @@ async function buildAll() {
       path.resolve(artifactDir, "src/index.ts"),
       ...(process.argv.includes("--test") ? [
         path.resolve(artifactDir, "src/test/auth.test.ts"),
+        path.resolve(artifactDir, "src/test/tools-secrets.test.ts"),
         path.resolve(artifactDir, "src/lib/invoice-signature.test.ts"),
       ] : []),
     ],
